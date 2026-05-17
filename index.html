@@ -1,0 +1,2085 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Capacidad de Inversión | Plaza Brokers</title>
+<meta name="description" content="Calcula tu capacidad crediticia y descubre a qué tipo de departamento de inversión puedes optar en Concepción o Santiago.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pb-blue: #1E88E5;
+  --pb-blue-dark: #1565C0;
+  --pb-blue-darker: #0D47A1;
+  --pb-blue-soft: #E3F2FD;
+  --pb-blue-line: rgba(30, 136, 229, 0.15);
+  --pb-blue-glow: rgba(30, 136, 229, 0.08);
+  --ink: #0A1628;
+  --ink-soft: #344155;
+  --ink-mute: #6B7785;
+  --paper: #FFFFFF;
+  --paper-tint: #FAFBFC;
+  --paper-edge: #EEF1F4;
+  --line: #E5E9EE;
+  --line-strong: #D1D7DE;
+  --warn: #B45309;
+  --warn-soft: #FEF3C7;
+  --success: #047857;
+  --success-soft: #D1FAE5;
+
+  --serif: 'Fraunces', Georgia, serif;
+  --sans: 'Manrope', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+
+  --shadow-sm: 0 1px 2px rgba(10, 22, 40, 0.04), 0 1px 3px rgba(10, 22, 40, 0.03);
+  --shadow-md: 0 4px 12px rgba(10, 22, 40, 0.06), 0 2px 4px rgba(10, 22, 40, 0.04);
+  --shadow-lg: 0 12px 32px rgba(10, 22, 40, 0.08), 0 4px 12px rgba(10, 22, 40, 0.04);
+  --shadow-blue: 0 8px 24px rgba(30, 136, 229, 0.18), 0 2px 8px rgba(30, 136, 229, 0.12);
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--sans);
+  background: var(--paper-tint);
+  color: var(--ink);
+  line-height: 1.5;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* === FONDOS DECORATIVOS === */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(var(--paper-edge) 1px, transparent 1px),
+    linear-gradient(90deg, var(--paper-edge) 1px, transparent 1px);
+  background-size: 64px 64px;
+  background-position: center;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 40%, transparent 100%);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.bg-glow {
+  position: fixed;
+  top: -300px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1200px;
+  height: 800px;
+  background: radial-gradient(ellipse at center, var(--pb-blue-glow) 0%, transparent 60%);
+  z-index: 0;
+  pointer-events: none;
+  animation: glow-drift 20s ease-in-out infinite;
+}
+
+@keyframes glow-drift {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(30px); }
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+/* === HEADER === */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 56px;
+  opacity: 0;
+  animation: fade-in 0.8s var(--ease) forwards;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  background: var(--ink);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s var(--ease);
+}
+
+.brand-mark:hover {
+  transform: scale(1.05);
+}
+
+.brand-mark::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: var(--pb-blue);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 30%, 0 100%);
+}
+
+.brand-mark svg {
+  width: 18px;
+  height: 18px;
+  margin-top: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand-name {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.brand-tagline {
+  font-size: 11px;
+  color: var(--ink-mute);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.uf-ref {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.uf-ref-label {
+  font-size: 10px;
+  color: var(--ink-mute);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.uf-ref-value {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+/* === HERO === */
+.hero {
+  text-align: left;
+  margin-bottom: 56px;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--pb-blue-soft);
+  border: 1px solid var(--pb-blue-line);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--pb-blue-dark);
+  letter-spacing: 0.02em;
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: fade-in 0.8s var(--ease) 0.1s forwards;
+}
+
+.hero-eyebrow::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--pb-blue);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+.hero-title {
+  font-family: var(--serif);
+  font-size: clamp(36px, 6vw, 56px);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: fade-up 0.9s var(--ease) 0.2s forwards;
+}
+
+.hero-title em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--pb-blue);
+  position: relative;
+}
+
+.hero-title em::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: var(--pb-blue-soft);
+  z-index: -1;
+  transform: skewX(-12deg);
+}
+
+.hero-sub {
+  font-size: 17px;
+  color: var(--ink-soft);
+  max-width: 580px;
+  line-height: 1.55;
+  opacity: 0;
+  animation: fade-up 0.9s var(--ease) 0.3s forwards;
+}
+
+/* === STEPS PROGRESS === */
+.steps-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 32px;
+  opacity: 0;
+  animation: fade-in 0.8s var(--ease) 0.4s forwards;
+}
+
+.step-dot {
+  flex: 1;
+  height: 3px;
+  background: var(--line);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+  transition: background 0.4s var(--ease);
+}
+
+.step-dot.active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--pb-blue);
+  border-radius: 2px;
+  transform-origin: left;
+  animation: slide-fill 0.6s var(--ease-out) forwards;
+}
+
+.step-dot.complete {
+  background: var(--pb-blue);
+}
+
+@keyframes slide-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.step-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-mute);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  margin-left: 8px;
+  transition: color 0.3s var(--ease);
+}
+
+/* === CARD GENÉRICA === */
+.card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.4s var(--ease);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.card-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--pb-blue);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-eyebrow::before {
+  content: '';
+  width: 16px;
+  height: 1px;
+  background: var(--pb-blue);
+}
+
+.card-title {
+  font-family: var(--serif);
+  font-size: clamp(26px, 4vw, 34px);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.card-desc {
+  font-size: 15px;
+  color: var(--ink-soft);
+  margin-bottom: 32px;
+  line-height: 1.55;
+  max-width: 560px;
+}
+
+/* === FIELDS === */
+.field {
+  margin-bottom: 28px;
+}
+
+.field:last-of-type { margin-bottom: 0; }
+
+.field-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.field-label-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+
+.field-hint {
+  font-size: 12px;
+  color: var(--ink-mute);
+  font-weight: 400;
+}
+
+.field-sub {
+  font-size: 13px;
+  color: var(--ink-mute);
+  margin-top: 6px;
+  line-height: 1.45;
+}
+
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-prefix {
+  position: absolute;
+  left: 16px;
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--ink-mute);
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 1;
+  transition: color 0.2s var(--ease);
+}
+
+.input-wrap:focus-within .input-prefix {
+  color: var(--pb-blue);
+}
+
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+  padding: 16px 16px 16px 36px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--paper);
+  transition: all 0.25s var(--ease);
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  appearance: none;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="text"] {
+  font-family: var(--sans);
+}
+
+input#edad {
+  padding-left: 16px;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--pb-blue);
+  box-shadow: 0 0 0 4px var(--pb-blue-soft);
+  transform: translateY(-1px);
+}
+
+input::placeholder {
+  color: var(--ink-mute);
+  opacity: 0.5;
+  font-weight: 400;
+}
+
+/* === SELECTORES (chips) === */
+.chip-group {
+  display: grid;
+  gap: 10px;
+}
+
+.chip-group.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.chip-group.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 600px) {
+  .chip-group.cols-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+.chip {
+  position: relative;
+  padding: 16px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--paper);
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+  text-align: left;
+  font-family: var(--sans);
+  overflow: hidden;
+}
+
+.chip:hover {
+  border-color: var(--pb-blue);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.chip.selected {
+  border-color: var(--pb-blue);
+  background: var(--pb-blue-soft);
+  box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
+  animation: chip-pop 0.4s var(--ease-spring);
+}
+
+@keyframes chip-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+.chip-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  display: block;
+  margin-bottom: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+.chip.selected .chip-title { color: var(--pb-blue-dark); }
+
+.chip-sub {
+  font-size: 11px;
+  color: var(--ink-mute);
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+.chip.selected .chip-sub { color: var(--pb-blue); }
+
+/* === BOTONES === */
+.btn-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 36px;
+  gap: 12px;
+}
+
+.btn {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px 24px;
+  border-radius: 100px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.25s var(--ease);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.005em;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--pb-blue), var(--pb-blue-dark));
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-blue);
+}
+
+.btn-primary:hover:not(:disabled)::after {
+  opacity: 1;
+}
+
+.btn-primary > * {
+  position: relative;
+  z-index: 1;
+}
+
+.btn-primary:disabled {
+  background: var(--line);
+  color: var(--ink-mute);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-soft);
+  padding: 14px 8px;
+}
+
+.btn-ghost:hover {
+  color: var(--ink);
+}
+
+.btn svg {
+  transition: transform 0.25s var(--ease);
+}
+
+.btn-primary:hover:not(:disabled) svg {
+  transform: translateX(4px);
+}
+
+.btn-ghost:hover svg {
+  transform: translateX(-3px);
+}
+
+/* === STEP PANES === */
+.step-pane {
+  display: none;
+}
+
+.step-pane.active {
+  display: block;
+  animation: step-enter 0.5s var(--ease) forwards;
+}
+
+@keyframes step-enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === IG GATE === */
+.ig-icon-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.ig-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  animation: ig-float 4s ease-in-out infinite;
+}
+
+@keyframes ig-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(2deg); }
+}
+
+.ig-icon::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+  filter: blur(12px);
+  opacity: 0.4;
+  z-index: -1;
+}
+
+.ig-icon svg {
+  width: 28px;
+  height: 28px;
+  color: white;
+}
+
+/* === RESULT === */
+.result-hero {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 48px 40px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-md);
+}
+
+.result-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--pb-blue), var(--pb-blue-dark));
+  animation: bar-slide 1s var(--ease-out) forwards;
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+@keyframes bar-slide {
+  to { transform: scaleX(1); }
+}
+
+.result-hero::after {
+  content: '';
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, var(--pb-blue-soft) 0%, transparent 70%);
+  opacity: 0.6;
+  pointer-events: none;
+  animation: blob-pulse 6s ease-in-out infinite;
+}
+
+@keyframes blob-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.1); opacity: 0.4; }
+}
+
+.result-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--pb-blue);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.result-eyebrow .dot {
+  width: 8px;
+  height: 8px;
+  background: var(--pb-blue);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px var(--pb-blue-soft);
+  animation: dot-pulse 2s ease-in-out infinite;
+}
+
+@keyframes dot-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px var(--pb-blue-soft); }
+  50% { box-shadow: 0 0 0 8px transparent; }
+}
+
+.result-amount-row {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 12px;
+  position: relative;
+  flex-wrap: wrap;
+}
+
+.result-amount-uf {
+  font-family: var(--serif);
+  font-size: clamp(48px, 9vw, 84px);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.result-amount-uf .unit {
+  font-size: 0.4em;
+  color: var(--ink-mute);
+  font-style: italic;
+  margin-left: 8px;
+  font-weight: 300;
+}
+
+.result-amount-clp {
+  font-family: var(--mono);
+  font-size: 16px;
+  color: var(--ink-mute);
+  font-weight: 500;
+  position: relative;
+}
+
+.result-label {
+  font-size: 15px;
+  color: var(--ink-soft);
+  position: relative;
+  max-width: 500px;
+  line-height: 1.5;
+}
+
+/* === RESULT METRICS GRID === */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 640px) {
+  .metrics-row { grid-template-columns: 1fr; }
+}
+
+.metric {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 24px 20px;
+  transition: all 0.3s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+
+.metric::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--pb-blue);
+  transition: width 0.4s var(--ease);
+}
+
+.metric:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.metric:hover::before {
+  width: 100%;
+}
+
+.metric-label {
+  font-size: 11px;
+  color: var(--ink-mute);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.metric-value {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.metric-sub {
+  font-size: 12px;
+  color: var(--ink-mute);
+}
+
+/* === CONTEXT BLOCK === */
+.context-block {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 36px 40px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.3s var(--ease);
+}
+
+.context-block:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.context-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--pb-blue);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.context-eyebrow::before {
+  content: '';
+  width: 20px;
+  height: 1px;
+  background: var(--pb-blue);
+}
+
+.context-title {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--ink);
+  margin-bottom: 16px;
+}
+
+.context-text {
+  font-size: 15px;
+  color: var(--ink-soft);
+  line-height: 1.65;
+  margin-bottom: 16px;
+}
+
+.context-text:last-child { margin-bottom: 0; }
+
+.context-text strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* === ZONES === */
+.zones-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.zone {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  background: var(--paper-tint);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  transition: all 0.25s var(--ease);
+  opacity: 0;
+  transform: translateX(-12px);
+  animation: zone-in 0.5s var(--ease) forwards;
+}
+
+@keyframes zone-in {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .zone {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+.zone:hover {
+  background: var(--paper);
+  border-color: var(--pb-blue-line);
+  transform: translateX(4px);
+}
+
+.zone-name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.zone-name-main {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.zone-name-sub {
+  font-size: 12px;
+  color: var(--ink-mute);
+}
+
+.zone-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+@media (max-width: 640px) {
+  .zone-metric { align-items: flex-start; }
+}
+
+.zone-metric-value {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.zone-metric-label {
+  font-size: 10px;
+  color: var(--ink-mute);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* === PATRIMONIO BLOCK === */
+.patrimonio-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+@media (max-width: 640px) {
+  .patrimonio-grid { grid-template-columns: 1fr; }
+}
+
+.patrimonio-card {
+  background: linear-gradient(180deg, var(--paper-tint), var(--paper));
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 28px 24px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s var(--ease);
+}
+
+.patrimonio-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--pb-blue-line);
+  box-shadow: var(--shadow-md);
+}
+
+.patrimonio-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 24px;
+  width: 32px;
+  height: 3px;
+  background: var(--pb-blue);
+  border-radius: 0 0 3px 3px;
+}
+
+.patrimonio-horizon {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-mute);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  margin-top: 8px;
+}
+
+.patrimonio-value {
+  font-family: var(--serif);
+  font-size: 36px;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.patrimonio-detail {
+  font-size: 12px;
+  color: var(--ink-mute);
+  line-height: 1.5;
+}
+
+.patrimonio-detail strong {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+/* === DISCLAIMERS === */
+.disclaimer {
+  margin-top: 32px;
+  padding: 16px 20px;
+  background: var(--paper-tint);
+  border-radius: 12px;
+  border-left: 3px solid var(--line-strong);
+  font-size: 12px;
+  color: var(--ink-mute);
+  line-height: 1.55;
+}
+
+.warning-block {
+  background: var(--warn-soft);
+  border: 1px solid #FCD34D;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.warning-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--warn);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.warning-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+
+.warning-text {
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.warning-text strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* === ESTADO LOADING === */
+.loading-state {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.loading-orbit {
+  width: 48px;
+  height: 48px;
+  position: relative;
+  margin: 0 auto 24px;
+}
+
+.loading-orbit::before,
+.loading-orbit::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+
+.loading-orbit::before {
+  border-top-color: var(--pb-blue);
+  border-right-color: var(--pb-blue);
+  animation: spin 1s linear infinite;
+}
+
+.loading-orbit::after {
+  inset: 8px;
+  border-bottom-color: var(--pb-blue-dark);
+  border-left-color: var(--pb-blue-dark);
+  animation: spin 1.4s linear infinite reverse;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text {
+  font-size: 14px;
+  color: var(--ink-mute);
+  animation: loading-text 2s ease-in-out infinite;
+}
+
+@keyframes loading-text {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* === FOOTER === */
+.footer {
+  margin-top: 56px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-mute);
+  line-height: 1.6;
+  opacity: 0;
+  animation: fade-in 0.8s var(--ease) 1s forwards;
+}
+
+.footer-mark {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+/* === ANIMATIONS === */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 640px) {
+  .container { padding: 20px 16px 60px; }
+  .card { padding: 28px 24px; border-radius: 16px; }
+  .context-block { padding: 28px 24px; }
+  .result-hero { padding: 36px 28px; border-radius: 16px; }
+  .hero { margin-bottom: 40px; }
+  .header { margin-bottom: 40px; }
+}
+
+/* === Selection === */
+::selection {
+  background: var(--pb-blue-soft);
+  color: var(--pb-blue-dark);
+}
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 20V10L12 6L18 10V20H14V14H10V20H6Z" fill="white"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name">Plaza Brokers</div>
+        <div class="brand-tagline">Inversión inmobiliaria</div>
+      </div>
+    </div>
+    <div class="uf-ref">
+      <div class="uf-ref-label">UF referencial</div>
+      <div class="uf-ref-value" id="uf-display">$40.240</div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">Simulador 2026</div>
+    <h1 class="hero-title">¿A qué depto de inversión<br><em>realmente</em> puedes acceder?</h1>
+    <p class="hero-sub">Calcula tu capacidad crediticia y descubre a qué tipo de departamento puedes optar en Concepción o Santiago.</p>
+  </section>
+
+  <!-- STEPS BAR -->
+  <div class="steps-bar" id="steps-bar">
+    <div class="step-dot active" data-dot="1"></div>
+    <div class="step-dot" data-dot="2"></div>
+    <div class="step-dot" data-dot="3"></div>
+    <div class="step-dot" data-dot="4"></div>
+    <div class="step-dot" data-dot="5"></div>
+    <span class="step-count" id="step-count">01 / 05</span>
+  </div>
+
+  <!-- FORM CONTAINER -->
+  <div id="form-container">
+
+    <!-- STEP 1: RENTA + CONTRATO -->
+    <div class="step-pane active" data-pane="1">
+      <div class="card">
+        <div class="card-eyebrow">Paso 1 · Tus ingresos</div>
+        <h2 class="card-title">¿Cuál es tu renta líquida mensual?</h2>
+        <p class="card-desc">El monto que efectivamente recibes en tu cuenta después de imposiciones y descuentos. El banco solo presta sobre lo que puede comprobar.</p>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-label-text">Renta líquida</span>
+            <span class="field-hint">Mensual · CLP</span>
+          </div>
+          <div class="input-wrap">
+            <span class="input-prefix">$</span>
+            <input type="text" id="renta" inputmode="numeric" placeholder="1.800.000" autocomplete="off">
+          </div>
+          <p class="field-sub">Sueldos variables son castigados por el banco. Considera tu promedio conservador de los últimos 12 meses.</p>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-label-text">Tipo de contrato</span>
+            <span class="field-hint">Cómo recibes tu renta</span>
+          </div>
+          <div class="chip-group cols-4">
+            <button class="chip" data-contrato="indefinido" onclick="selectContrato(this)">
+              <span class="chip-title">Indefinido</span>
+              <span class="chip-sub">Sueldo fijo</span>
+            </button>
+            <button class="chip" data-contrato="plazo_fijo" onclick="selectContrato(this)">
+              <span class="chip-title">Plazo fijo</span>
+              <span class="chip-sub">Contrato a término</span>
+            </button>
+            <button class="chip" data-contrato="honorarios" onclick="selectContrato(this)">
+              <span class="chip-title">Honorarios</span>
+              <span class="chip-sub">Boletas</span>
+            </button>
+            <button class="chip" data-contrato="independiente" onclick="selectContrato(this)">
+              <span class="chip-title">Independiente</span>
+              <span class="chip-sub">Empresa propia</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <span></span>
+          <button class="btn btn-primary" onclick="nextStep(1)" id="btn-1" disabled>
+            Continuar
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L8 3M13 8L8 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: DEUDAS -->
+    <div class="step-pane" data-pane="2">
+      <div class="card">
+        <div class="card-eyebrow">Paso 2 · Tus deudas</div>
+        <h2 class="card-title">¿Cuánto pagas mensual en deudas?</h2>
+        <p class="card-desc">Cuotas de tarjetas de crédito, créditos de consumo, automotrices, créditos universitarios. El sistema REDEC consolida toda tu deuda — el banco la ve igual.</p>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-label-text">Total deudas mensuales</span>
+            <span class="field-hint">Suma de cuotas</span>
+          </div>
+          <div class="input-wrap">
+            <span class="input-prefix">$</span>
+            <input type="text" id="deudas" inputmode="numeric" placeholder="0" autocomplete="off">
+          </div>
+          <p class="field-sub">Si no tienes deudas, déjalo en cero. Esto sale en tu informe REDEC, no es estimable.</p>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="prevStep(2)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M3 8L8 3M3 8L8 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Volver
+          </button>
+          <button class="btn btn-primary" onclick="nextStep(2)" id="btn-2">
+            Continuar
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L8 3M13 8L8 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: EDAD + PIE -->
+    <div class="step-pane" data-pane="3">
+      <div class="card">
+        <div class="card-eyebrow">Paso 3 · Tu estructura</div>
+        <h2 class="card-title">Edad y estructura del pie</h2>
+        <p class="card-desc">Tu edad define el plazo máximo del crédito (el banco no presta a plazos que crucen los 75 años). La estructura del pie define el ticket al que puedes apuntar.</p>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-label-text">Tu edad</span>
+            <span class="field-hint">Años</span>
+          </div>
+          <div class="input-wrap">
+            <input type="text" id="edad" inputmode="numeric" placeholder="32" autocomplete="off" maxlength="2">
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-label-text">¿Cómo financias el pie?</span>
+            <span class="field-hint">Selecciona una opción</span>
+          </div>
+          <div class="chip-group cols-4">
+            <button class="chip" data-pie="bono" onclick="selectPie(this)">
+              <span class="chip-title">Bono pie</span>
+            </button>
+            <button class="chip" data-pie="5" onclick="selectPie(this)">
+              <span class="chip-title">5%</span>
+            </button>
+            <button class="chip" data-pie="10" onclick="selectPie(this)">
+              <span class="chip-title">10%</span>
+            </button>
+            <button class="chip" data-pie="15" onclick="selectPie(this)">
+              <span class="chip-title">15%</span>
+            </button>
+          </div>
+          <p class="field-sub">Cada estructura tiene ventajas: el bono pie te permite entrar sin liquidez pero el dividendo es más alto. Pies mayores reducen tu cuota mensual.</p>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="prevStep(3)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M3 8L8 3M3 8L8 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Volver
+          </button>
+          <button class="btn btn-primary" onclick="nextStep(3)" id="btn-3" disabled>
+            Continuar
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L8 3M13 8L8 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: CIUDAD -->
+    <div class="step-pane" data-pane="4">
+      <div class="card">
+        <div class="card-eyebrow">Paso 4 · Tu ciudad</div>
+        <h2 class="card-title">¿Dónde quieres invertir?</h2>
+        <p class="card-desc">Ambas ciudades son buenas inversiones en 2026, pero operan bajo lógicas distintas. Concepción es flujo y rentabilidad mensual. Santiago es patrimonio, plusvalía y volumen de mercado.</p>
+
+        <div class="field">
+          <div class="chip-group cols-2">
+            <button class="chip" data-ciudad="concepcion" onclick="selectCiudad(this)">
+              <span class="chip-title">Concepción</span>
+            </button>
+            <button class="chip" data-ciudad="santiago" onclick="selectCiudad(this)">
+              <span class="chip-title">Santiago</span>
+            </button>
+          </div>
+          <p class="field-sub">No te preocupes si dudas. En el resultado te explicamos qué tipo de negocio es cada una, con números reales.</p>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="prevStep(4)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M3 8L8 3M3 8L8 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Volver
+          </button>
+          <button class="btn btn-primary" onclick="nextStep(4)" id="btn-4" disabled>
+            Continuar
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L8 3M13 8L8 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 5: INSTAGRAM GATE -->
+    <div class="step-pane" data-pane="5">
+      <div class="card">
+        <div class="ig-icon-wrap">
+          <div class="ig-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/>
+              <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+              <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+            </svg>
+          </div>
+          <div>
+            <div class="card-eyebrow" style="margin-bottom: 4px;">Paso 5 · Identificación</div>
+            <h2 class="card-title" style="margin-bottom: 0;">Tu Instagram</h2>
+          </div>
+        </div>
+        <p class="card-desc">Para enviarte tu resultado y mantener el contexto si tienes preguntas después. Si llegaste acá desde Instagram, ya sabemos quién eres.</p>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-label-text">Usuario de Instagram</span>
+            <span class="field-hint">Sin @ ni espacios</span>
+          </div>
+          <div class="input-wrap">
+            <span class="input-prefix">@</span>
+            <input type="text" id="instagram" placeholder="tuusuario" autocomplete="off">
+          </div>
+          <p class="field-sub">Solo el equipo de Andrés ve esta información. No publicamos, no compartimos, no enviamos spam.</p>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="prevStep(5)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M3 8L8 3M3 8L8 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Volver
+          </button>
+          <button class="btn btn-primary" onclick="submitForm()" id="btn-submit" disabled>
+            Ver mi resultado
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L8 3M13 8L8 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="step-pane" data-pane="loading">
+      <div class="card">
+        <div class="loading-state">
+          <div class="loading-orbit"></div>
+          <div class="loading-text">Calculando tu capacidad crediticia…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="step-pane" data-pane="result">
+      <div id="result-content"></div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p>Datos de mercado 2026 · Fuentes: CChC, Banco Central, Urbani, TocToc, DeptoScore</p>
+    <p style="margin-top: 6px;">Operado por <span class="footer-mark">Andrés Plaza</span> · CEO de Plaza Brokers</p>
+  </footer>
+
+</div>
+
+<script>
+// =========================================================================
+// CONFIGURACIÓN FINANCIERA
+// =========================================================================
+const CONFIG = {
+  UF: 40240,
+  CARGA_FINANCIERA_MAX: 0.30,
+  EDAD_LIMITE: 75,
+  PLAZO_MAX: 30,
+  TASAS: {
+    bono: 0.0470,
+    5: 0.0445,
+    10: 0.0419,
+    15: 0.0395
+  },
+  // Multiplier de renta efectiva según tipo de contrato (cómo el banco la "ve")
+  MULT_CONTRATO: {
+    indefinido: 1.00,
+    plazo_fijo: 0.95,
+    honorarios: 0.85,
+    independiente: 0.85
+  },
+  // Margen sobre el ticket mínimo de zona (broker puede negociar con inmobiliaria)
+  MARGEN_TICKET: 1.15,
+  SHEETS_URL: 'https://script.google.com/macros/s/AKfycbxcq0WUUhMR0EBKz7w-bCiSdGDprEFw78fNgQagRf5mIzPfDbErJGJTd-0DiX0bLhUM/exec'
+};
+
+// =========================================================================
+// DATA DE MERCADO
+// =========================================================================
+const ZONAS_CONCE = [
+  { nombre: 'Pedro de Valdivia', perfil: 'Profesional medio-alto, familias', ufm2: 57.2, ticket: [2400, 3200], arriendo1d: 450000, arriendo2d: 550000, cap: 6.2 },
+  { nombre: 'Lomas de San Andrés / San Sebastián', perfil: 'Profesional joven, ejecutivo', ufm2: 61.9, ticket: [2600, 3500], arriendo1d: 470000, arriendo2d: 580000, cap: 6.0 },
+  { nombre: 'Barrio Norte / Collao', perfil: 'Universitario UBB, presupuesto medio', ufm2: 65.9, ticket: [2100, 2700], arriendo1d: 430000, arriendo2d: 520000, cap: 6.4 },
+  { nombre: 'Centro / Plaza Perú / UdeC', perfil: 'Universitario UdeC, profesional', ufm2: 71.9, ticket: [2300, 3000], arriendo1d: 470000, arriendo2d: 550000, cap: 6.5 }
+];
+
+const ZONAS_STGO = [
+  { nombre: 'Cerrillos', tipo: 'emergente', perfil: 'Trabajador emergente, técnico logístico', ufm2: 68, ticket: [1680, 2100], arriendo1d: 390000, arriendo2d: 470000, cap: 7.4, plus: '6-12% anual' },
+  { nombre: 'Estación Central', tipo: 'emergente', perfil: 'Trabajador servicios/salud, estudiante', ufm2: 63, ticket: [1900, 2600], arriendo1d: 420000, arriendo2d: 500000, cap: 6.8, plus: '6-12% anual' },
+  { nombre: 'San Miguel', tipo: 'transicion', perfil: 'Profesional medio, familias nucleares', ufm2: 71, ticket: [2100, 3200], arriendo1d: 470000, arriendo2d: 530000, cap: 6.2, plus: '3-6% anual' },
+  { nombre: 'La Florida', tipo: 'transicion', perfil: 'Familias clase media, oficinistas sur', ufm2: 74, ticket: [2520, 2625], arriendo1d: 380000, arriendo2d: 550000, cap: 6.0, plus: '4-7% anual' },
+  { nombre: 'Independencia', tipo: 'emergente', perfil: 'Personal médico hospitalario', ufm2: 70, ticket: [2200, 2700], arriendo1d: 350000, arriendo2d: 450000, cap: 5.8, plus: '3-6% anual' },
+  { nombre: 'Ñuñoa', tipo: 'transicion', perfil: 'Académico, ejecutivo joven', ufm2: 98, ticket: [2800, 4200], arriendo1d: 510000, arriendo2d: 590000, cap: 5.8, plus: '6-8% anual' },
+  { nombre: 'Santiago Centro', tipo: 'emergente', perfil: 'Oficinista, profesional independiente', ufm2: 79, ticket: [2400, 2900], arriendo1d: 330000, arriendo2d: 450000, cap: 5.5, plus: '4-5% anual' },
+  { nombre: 'La Cisterna', tipo: 'emergente', perfil: 'Trabajador operativo, familia formación', ufm2: 62, ticket: [1900, 2400], arriendo1d: 320000, arriendo2d: 450000, cap: 5.2, plus: '3-6% anual' },
+  { nombre: 'Quilicura', tipo: 'emergente', perfil: 'Operario logístico industrial', ufm2: 62, ticket: [1900, 2400], arriendo1d: 300000, arriendo2d: 420000, cap: 5.0, plus: '5-10% anual' },
+  { nombre: 'Huechuraba', tipo: 'consolidada', perfil: 'Ejecutivo corporativo Ciudad Empresarial', ufm2: 80, ticket: [2800, 3500], arriendo1d: 450000, arriendo2d: 650000, cap: 4.8, plus: '4-6% anual' },
+  { nombre: 'Providencia', tipo: 'consolidada', perfil: 'Ejecutivo, profesional consolidado', ufm2: 117, ticket: [4200, 6500], arriendo1d: 560000, arriendo2d: 680000, cap: 5.0, plus: '3-5% anual' },
+  { nombre: 'Las Condes', tipo: 'consolidada', perfil: 'Alta gerencia, ejecutivo corporativo', ufm2: 120, ticket: [5500, 9000], arriendo1d: 620000, arriendo2d: 850000, cap: 4.8, plus: '3-5% anual' }
+];
+
+const PLUSVALIA_CONCE = 0.05;
+const PLUSVALIA_STGO = 0.045;
+
+// =========================================================================
+// ESTADO
+// =========================================================================
+const state = {
+  renta: 0,
+  contrato: null,
+  deudas: 0,
+  edad: 0,
+  pie: null,
+  ciudad: null,
+  instagram: '',
+  step: 1
+};
+
+// =========================================================================
+// FORMATEO
+// =========================================================================
+function formatCLP(n) {
+  return new Intl.NumberFormat('es-CL').format(Math.round(n));
+}
+function formatUF(n, decimals = 0) {
+  return new Intl.NumberFormat('es-CL', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(n);
+}
+function parseNumber(str) {
+  return parseInt((str || '').replace(/\D/g, ''), 10) || 0;
+}
+function formatThousands(str) {
+  const num = parseNumber(str);
+  return num > 0 ? formatCLP(num) : '';
+}
+
+// =========================================================================
+// INPUTS - Formateo en vivo
+// =========================================================================
+['renta', 'deudas'].forEach(id => {
+  const input = document.getElementById(id);
+  input.addEventListener('input', e => {
+    const cursorPos = e.target.selectionStart;
+    const oldLen = e.target.value.length;
+    const formatted = formatThousands(e.target.value);
+    e.target.value = formatted;
+    const newLen = formatted.length;
+    e.target.setSelectionRange(cursorPos + (newLen - oldLen), cursorPos + (newLen - oldLen));
+
+    if (id === 'renta') {
+      state.renta = parseNumber(e.target.value);
+      checkStep1();
+    }
+    if (id === 'deudas') {
+      state.deudas = parseNumber(e.target.value);
+    }
+  });
+});
+
+function checkStep1() {
+  document.getElementById('btn-1').disabled = !(state.renta >= 400000 && state.contrato !== null);
+}
+
+function selectContrato(btn) {
+  document.querySelectorAll('[data-contrato]').forEach(c => c.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.contrato = btn.dataset.contrato;
+  checkStep1();
+}
+
+document.getElementById('edad').addEventListener('input', e => {
+  const val = parseInt(e.target.value.replace(/\D/g, ''), 10) || 0;
+  e.target.value = val > 0 ? val : '';
+  state.edad = val;
+  checkStep3();
+});
+
+document.getElementById('instagram').addEventListener('input', e => {
+  let val = e.target.value.replace(/[^a-zA-Z0-9._]/g, '').toLowerCase();
+  e.target.value = val;
+  state.instagram = val;
+  document.getElementById('btn-submit').disabled = val.length < 2;
+});
+
+function selectPie(btn) {
+  document.querySelectorAll('[data-pie]').forEach(c => c.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.pie = btn.dataset.pie;
+  checkStep3();
+}
+
+function selectCiudad(btn) {
+  document.querySelectorAll('[data-ciudad]').forEach(c => c.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.ciudad = btn.dataset.ciudad;
+  document.getElementById('btn-4').disabled = false;
+}
+
+function checkStep3() {
+  const valid = state.edad >= 18 && state.edad <= 70 && state.pie !== null;
+  document.getElementById('btn-3').disabled = !valid;
+}
+
+// =========================================================================
+// NAVEGACIÓN ENTRE PASOS - usa data-pane (selector único)
+// =========================================================================
+function showPane(paneKey) {
+  document.querySelectorAll('.step-pane').forEach(s => s.classList.remove('active'));
+  const target = document.querySelector(`.step-pane[data-pane="${paneKey}"]`);
+  if (target) target.classList.add('active');
+
+  if (typeof paneKey === 'number') {
+    state.step = paneKey;
+    document.getElementById('step-count').textContent = `0${paneKey} / 05`;
+    document.querySelectorAll('.step-dot').forEach(d => {
+      const step = parseInt(d.dataset.dot);
+      d.classList.remove('active', 'complete');
+      if (step < paneKey) d.classList.add('complete');
+      if (step === paneKey) d.classList.add('active');
+    });
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function nextStep(current) {
+  showPane(current + 1);
+}
+
+function prevStep(current) {
+  showPane(current - 1);
+}
+
+// =========================================================================
+// CÁLCULO FINANCIERO
+// =========================================================================
+function calcular() {
+  const tasaAnual = CONFIG.TASAS[state.pie];
+  const tasaMensual = tasaAnual / 12;
+
+  const plazoAnios = Math.min(CONFIG.PLAZO_MAX, CONFIG.EDAD_LIMITE - state.edad);
+  const plazoMeses = plazoAnios * 12;
+
+  // Renta efectiva según cómo el banco ve el tipo de contrato
+  const multContrato = CONFIG.MULT_CONTRATO[state.contrato] || 1.0;
+  const rentaEfectiva = state.renta * multContrato;
+
+  const dividendoMaximo = (rentaEfectiva * CONFIG.CARGA_FINANCIERA_MAX) - state.deudas;
+
+  if (dividendoMaximo <= 0 || plazoAnios < 8) {
+    return {
+      califica: false,
+      razon: dividendoMaximo <= 0 ? 'deudas-altas' : 'edad-plazo',
+      dividendoMaximo,
+      plazoAnios
+    };
+  }
+
+  const montoCreditoCLP = dividendoMaximo * (1 - Math.pow(1 + tasaMensual, -plazoMeses)) / tasaMensual;
+  const montoCreditoUF = montoCreditoCLP / CONFIG.UF;
+
+  const ltv = {
+    bono: 1.00,
+    5: 0.95,
+    10: 0.90,
+    15: 0.85
+  }[state.pie];
+
+  const ticketTotalUF = montoCreditoUF / ltv;
+  const ticketTotalCLP = ticketTotalUF * CONFIG.UF;
+  const pieRequeridoUF = ticketTotalUF * (1 - ltv);
+  const pieRequeridoCLP = pieRequeridoUF * CONFIG.UF;
+
+  const zonas = state.ciudad === 'concepcion' ? ZONAS_CONCE : ZONAS_STGO;
+  const zonasAccesibles = zonas.filter(z => z.ticket[0] <= ticketTotalUF * CONFIG.MARGEN_TICKET);
+  const zonasRecomendadas = zonasAccesibles
+    .map(z => ({
+      ...z,
+      ajuste: ticketTotalUF >= z.ticket[1] ? 'holgado' : ticketTotalUF >= z.ticket[0] ? 'ajustado' : 'apretado'
+    }))
+    .sort((a, b) => b.cap - a.cap)
+    .slice(0, 5);
+
+  if (zonasRecomendadas.length === 0) {
+    return {
+      califica: false,
+      razon: 'ticket-bajo',
+      ticketTotalUF,
+      dividendoMaximo
+    };
+  }
+
+  const plusvaliaAnual = state.ciudad === 'concepcion' ? PLUSVALIA_CONCE : PLUSVALIA_STGO;
+  const zonaTipica = zonasRecomendadas[0];
+  const arriendoBase = zonaTipica.arriendo1d;
+
+  const cuotaMensual = dividendoMaximo;
+  const intereses10 = calcInteresesAcumulados(montoCreditoCLP, tasaMensual, plazoMeses, 120);
+  const amortizado10 = (cuotaMensual * 120) - intereses10;
+  const valorActivo10 = ticketTotalCLP * Math.pow(1 + plusvaliaAnual, 10);
+  const deudaRestante10 = montoCreditoCLP - amortizado10;
+  const patrimonio10 = valorActivo10 - deudaRestante10;
+
+  const valorFinal = ticketTotalCLP * Math.pow(1 + plusvaliaAnual, plazoAnios);
+  const flujoMensualLibre = arriendoBase * Math.pow(1 + plusvaliaAnual, plazoAnios);
+
+  return {
+    califica: true,
+    ticketTotalUF,
+    ticketTotalCLP,
+    pieRequeridoCLP,
+    montoCreditoUF,
+    dividendoMaximo,
+    plazoAnios,
+    tasaAnual,
+    zonasRecomendadas,
+    patrimonio10,
+    valorActivo10,
+    deudaRestante10,
+    valorFinal,
+    flujoMensualLibre,
+    plusvaliaAnual
+  };
+}
+
+function calcInteresesAcumulados(principal, tasaMensual, plazoTotal, mesesObjetivo) {
+  let saldo = principal;
+  let interesesAcum = 0;
+  const cuota = principal * tasaMensual / (1 - Math.pow(1 + tasaMensual, -plazoTotal));
+  for (let m = 0; m < mesesObjetivo; m++) {
+    const interesMes = saldo * tasaMensual;
+    interesesAcum += interesMes;
+    saldo -= (cuota - interesMes);
+  }
+  return interesesAcum;
+}
+
+// =========================================================================
+// SUBMIT
+// =========================================================================
+async function submitForm() {
+  showPane('loading');
+  const resultado = calcular();
+  enviarLead(resultado);
+  await new Promise(r => setTimeout(r, 1600));
+  renderResultado(resultado);
+  showPane('result');
+}
+
+function enviarLead(resultado) {
+  if (CONFIG.SHEETS_URL === 'REEMPLAZAR_CON_URL_APPS_SCRIPT') return;
+
+  const payload = {
+    timestamp: new Date().toISOString(),
+    instagram: state.instagram,
+    renta: state.renta,
+    contrato: state.contrato,
+    deudas: state.deudas,
+    edad: state.edad,
+    pie: state.pie,
+    ciudad: state.ciudad,
+    califica: resultado.califica,
+    ticket_uf: resultado.ticketTotalUF ? Math.round(resultado.ticketTotalUF) : null,
+    dividendo: resultado.dividendoMaximo ? Math.round(resultado.dividendoMaximo) : null,
+    razon_no_califica: resultado.razon || null
+  };
+
+  fetch(CONFIG.SHEETS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).catch(err => console.warn('Sheets sync:', err));
+}
+
+// =========================================================================
+// RENDER DEL RESULTADO
+// =========================================================================
+function renderResultado(r) {
+  const container = document.getElementById('result-content');
+
+  if (!r.califica) {
+    container.innerHTML = renderNoCalifica(r);
+    return;
+  }
+
+  const ciudadNombre = state.ciudad === 'concepcion' ? 'Concepción' : 'Santiago';
+  const pieLabel = {
+    bono: 'Bono pie · financiamiento 100%',
+    5: '5% pie · con respaldo FOGAES',
+    10: '10% pie · estructura estándar',
+    15: '15% pie · acceso a mejor tasa'
+  }[state.pie];
+
+  container.innerHTML = `
+    <div class="result-hero" style="animation: scale-in 0.7s var(--ease) forwards;">
+      <div class="result-eyebrow">
+        <span class="dot"></span>
+        Tu capacidad de inversión
+      </div>
+      <div class="result-amount-row">
+        <div class="result-amount-uf">
+          ${formatUF(r.ticketTotalUF)}
+          <span class="unit">UF</span>
+        </div>
+        <div class="result-amount-clp">
+          ≈ $${formatCLP(r.ticketTotalCLP / 1000000)} M CLP
+        </div>
+      </div>
+      <p class="result-label">
+        Puedes apuntar a un depto de inversión de hasta esta cifra en ${ciudadNombre}, con tu estructura actual: <strong>${pieLabel}</strong>.
+      </p>
+    </div>
+
+    <div class="metrics-row" style="animation: fade-up 0.6s var(--ease) 0.15s both;">
+      <div class="metric">
+        <div class="metric-label">Dividendo mensual</div>
+        <div class="metric-value">$${formatCLP(r.dividendoMaximo)}</div>
+        <div class="metric-sub">Máximo que el banco te aprobaría según tu perfil</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Plazo del crédito</div>
+        <div class="metric-value">${r.plazoAnios} años</div>
+        <div class="metric-sub">Tasa referencial ${(r.tasaAnual * 100).toFixed(2)}% UF</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">${state.pie === 'bono' ? 'Pie con bono' : 'Pie a aportar'}</div>
+        <div class="metric-value">${state.pie === 'bono' ? '$0' : '$' + formatCLP(r.pieRequeridoCLP)}</div>
+        <div class="metric-sub">${state.pie === 'bono' ? 'Financiado en el precio' : 'Mínimo exigido por el banco'}</div>
+      </div>
+    </div>
+
+    ${renderContextoCiudad(r)}
+    ${renderPatrimonio(r)}
+
+    <div class="disclaimer" style="animation: fade-in 0.6s var(--ease) 0.6s both;">
+      <strong style="color: var(--ink-soft);">Sobre estos números:</strong> Proyección basada en datos de mercado 2026 (fuentes: Banco Central, CChC, Urbani, TocToc, DeptoScore). El rendimiento real depende del proyecto específico, las condiciones bancarias al momento de la compra y la evolución del mercado. Tasas referenciales según REDEC y políticas vigentes. No es una preaprobación crediticia, es una simulación.
+    </div>
+  `;
+
+  setTimeout(() => {
+    document.querySelectorAll('.zone').forEach((el, i) => {
+      el.style.animationDelay = `${0.05 + i * 0.08}s`;
+    });
+  }, 100);
+}
+
+function renderContextoCiudad(r) {
+  if (state.ciudad === 'concepcion') {
+    return `
+      <div class="context-block" style="animation: fade-up 0.6s var(--ease) 0.25s both;">
+        <div class="context-eyebrow">Cómo trabaja tu inversión en Concepción</div>
+        <h3 class="context-title">El depto se paga solo. Ese es el negocio acá.</h3>
+        <p class="context-text">
+          Concepción concentra <strong>más de 133.000 estudiantes universitarios</strong> (UdeC, UBB, UCSC) y un mercado profesional joven en expansión del 35% interanual. La ocupación de arriendo en el centro alcanza el <strong>93%</strong> con solo 590 unidades disponibles de un parque de 8.488.
+        </p>
+        <p class="context-text">
+          La rentabilidad bruta de tu inversión fluctúa entre <strong>6,1% y 6,7% anual</strong>, lo que significa que el arriendo cubre tu dividendo completo y, en muchos casos, te deja flujo positivo desde el mes uno. A esto se suma una plusvalía proyectada de <strong>4% a 8% anual</strong> apalancada en el Puente Industrial y la extensión del Biotrén.
+        </p>
+      </div>
+    `;
+  } else {
+    return `
+      <div class="context-block" style="animation: fade-up 0.6s var(--ease) 0.25s both;">
+        <div class="context-eyebrow">Cómo trabaja tu inversión en Santiago</div>
+        <h3 class="context-title">El negocio no es el flujo. Es patrimonio.</h3>
+        <p class="context-text">
+          Santiago opera bajo otra lógica. El arriendo no siempre cubre el dividendo completo — pero eso <strong>no significa que estés perdiendo</strong>. Tu arrendatario está pagando el 100% del interés del crédito y amortizando una parte de la deuda. Es como ahorrar en bien raíz pagando un crédito sin intereses.
+        </p>
+        <p class="context-text">
+          La ocupación metropolitana supera el <strong>95%</strong>, las tasas hipotecarias están en mínimos de 5 años (4,5% TPM), y el mercado proyecta crecimiento del 4,8% en construcción para 2026. La verdadera ganancia viene de tres fuentes simultáneas: <strong>plusvalía, amortización del crédito y el flujo libre cuando termines de pagar</strong>.
+        </p>
+      </div>
+    `;
+  }
+}
+
+function renderZonas(r) {
+  const ciudadNombre = state.ciudad === 'concepcion' ? 'Concepción' : 'Santiago';
+
+  return `
+    <div class="context-block" style="animation: fade-up 0.6s var(--ease) 0.35s both;">
+      <div class="context-eyebrow">Zonas que calzan con tu capacidad en ${ciudadNombre}</div>
+      <h3 class="context-title">Dónde puedes apuntar con ${formatUF(r.ticketTotalUF)} UF</h3>
+      <p class="context-text">
+        Estas son las zonas con proyectos que se ajustan a tu capacidad crediticia actual. Ordenadas por rentabilidad bruta anual (cap rate).
+      </p>
+      <div class="zones-grid">
+        ${r.zonasRecomendadas.map(z => `
+          <div class="zone">
+            <div class="zone-name">
+              <span class="zone-name-main">${z.nombre}</span>
+              <span class="zone-name-sub">${z.perfil}</span>
+            </div>
+            <div class="zone-metric">
+              <span class="zone-metric-value">${z.cap}%</span>
+              <span class="zone-metric-label">Cap rate</span>
+            </div>
+            <div class="zone-metric">
+              <span class="zone-metric-value">${z.ticket[0]}–${z.ticket[1]} UF</span>
+              <span class="zone-metric-label">Ticket</span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderPatrimonio(r) {
+  return `
+    <div class="context-block" style="animation: fade-up 0.6s var(--ease) 0.45s both;">
+      <div class="context-eyebrow">Tu patrimonio proyectado</div>
+      <h3 class="context-title">Qué construyes con esta inversión</h3>
+      <p class="context-text">
+        Dos horizontes. Sin promesas, solo aritmética de mercado: lo que el activo vale + lo que has amortizado del crédito.
+      </p>
+      <div class="patrimonio-grid">
+        <div class="patrimonio-card">
+          <div class="patrimonio-horizon">A 10 años</div>
+          <div class="patrimonio-value">$${formatCLP(r.patrimonio10 / 1000000)} M</div>
+          <div class="patrimonio-detail">
+            Valor del activo: <strong>$${formatCLP(r.valorActivo10 / 1000000)} M</strong><br>
+            Deuda restante: <strong>$${formatCLP(r.deudaRestante10 / 1000000)} M</strong><br>
+            <span style="color: var(--ink-mute);">Plusvalía estimada ${(r.plusvaliaAnual * 100).toFixed(1)}% anual</span>
+          </div>
+        </div>
+        <div class="patrimonio-card">
+          <div class="patrimonio-horizon">Al terminar el crédito (${r.plazoAnios} años)</div>
+          <div class="patrimonio-value">$${formatCLP(r.valorFinal / 1000000)} M</div>
+          <div class="patrimonio-detail">
+            Activo libre de deuda<br>
+            Más arriendo mensual: <strong>~$${formatCLP(r.flujoMensualLibre)}</strong><br>
+            <span style="color: var(--ink-mute);">Sin dividendo que pagar</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderNoCalifica(r) {
+  let titulo, mensaje, ruta;
+
+  if (r.razon === 'deudas-altas') {
+    titulo = 'Tus deudas actuales superan el margen del banco';
+    mensaje = `Con tus deudas mensuales actuales ($${formatCLP(state.deudas)}), no queda margen para que el banco te apruebe un dividendo hipotecario dentro de tu carga financiera permitida.`;
+    ruta = 'Bajar deudas existentes (consolidar tarjetas, pagar créditos de consumo cortos) libera capacidad rápidamente. En 3-6 meses puedes estar en otra posición.';
+  } else if (r.razon === 'edad-plazo') {
+    titulo = 'El plazo del crédito te queda corto';
+    mensaje = `A tu edad, el plazo máximo que el banco autoriza es de ${r.plazoAnios} años, lo que eleva mucho la cuota mensual y reduce tu capacidad.`;
+    ruta = 'Una opción es subir el pie a 15-20%. Otra es apuntar a tickets menores en zonas emergentes con alto cap rate. Andrés puede revisar tu caso específico.';
+  } else {
+    titulo = 'Tu capacidad apunta a un ticket menor del que ofrece el mercado';
+    mensaje = `Con la estructura actual, tu capacidad crediticia no alcanza el ticket mínimo de las zonas que cubrimos en ${state.ciudad === 'concepcion' ? 'Concepción' : 'Santiago'}.`;
+    ruta = 'Hay caminos concretos: aumentar el pie, considerar proyectos con bono pie, o esperar 6-12 meses con un plan de mejora crediticia. Vale la pena conversarlo.';
+  }
+
+  return `
+    <div class="warning-block" style="animation: scale-in 0.6s var(--ease) forwards;">
+      <div class="warning-eyebrow">Análisis honesto</div>
+      <h2 class="warning-title">${titulo}</h2>
+      <p class="warning-text">${mensaje}</p>
+    </div>
+
+    <div class="context-block" style="animation: fade-up 0.6s var(--ease) 0.2s both;">
+      <div class="context-eyebrow">El camino que sí existe</div>
+      <h3 class="context-title">Esto no es un "no". Es un "todavía no".</h3>
+      <p class="context-text">${ruta}</p>
+      <p class="context-text">
+        El error más caro que cometen los que están en tu situación es <strong>esperar pasivamente</strong> a que las condiciones cambien solas. La inflación y la UF no esperan. Pero entrar mal preparado al banco te marca el historial.
+      </p>
+      <p class="context-text">
+        La diferencia la hace tener un plan claro: qué deuda bajar primero, qué pie reunir, qué proyectos están alineados con tu timing. Eso es lo que Andrés y el equipo revisamos uno por uno.
+      </p>
+    </div>
+
+    <div class="disclaimer">
+      <strong style="color: var(--ink-soft);">Cálculo realizado con:</strong> Renta $${formatCLP(state.renta)}, contrato ${state.contrato.replace('_', ' ')}, deudas $${formatCLP(state.deudas)}, edad ${state.edad}, pie ${state.pie === 'bono' ? 'bono pie' : state.pie + '%'}, ciudad ${state.ciudad === 'concepcion' ? 'Concepción' : 'Santiago'}. Tasas y parámetros referenciales según REDEC 2026.
+    </div>
+  `;
+}
+
+// =========================================================================
+// INIT
+// =========================================================================
+document.getElementById('uf-display').textContent = '$' + formatCLP(CONFIG.UF);
+</script>
+
+</body>
+</html>
