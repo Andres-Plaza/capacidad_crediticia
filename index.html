@@ -463,6 +463,13 @@ input#edad {
   padding-left: 16px;
 }
 
+/* Teléfono: prefijo fijo +56 9, tipografía mono para que se lea como dato */
+input#telefono {
+  font-family: var(--mono);
+  padding-left: 70px;
+  letter-spacing: 0.04em;
+}
+
 input:focus {
   outline: none;
   border-color: var(--pb-blue);
@@ -539,6 +546,7 @@ input::placeholder {
   display: block;
   position: relative;
   z-index: 1;
+  line-height: 1.35;
 }
 
 .chip.selected .chip-sub { color: var(--pb-blue); }
@@ -648,46 +656,46 @@ input::placeholder {
   }
 }
 
-/* === IG GATE === */
-.ig-icon-wrap {
+/* === CONTACTO (paso 5) === */
+.contact-icon-wrap {
   display: flex;
   align-items: center;
   gap: 16px;
   margin-bottom: 24px;
 }
 
-.ig-icon {
+.phone-icon {
   width: 56px;
   height: 56px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+  background: linear-gradient(135deg, var(--pb-blue) 0%, var(--pb-blue-darker) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   flex-shrink: 0;
-  animation: ig-float 4s ease-in-out infinite;
+  animation: phone-float 4s ease-in-out infinite;
 }
 
-@keyframes ig-float {
+@keyframes phone-float {
   0%, 100% { transform: translateY(0) rotate(0deg); }
   50% { transform: translateY(-3px) rotate(2deg); }
 }
 
-.ig-icon::after {
+.phone-icon::after {
   content: '';
   position: absolute;
   inset: -3px;
   border-radius: 18px;
-  background: linear-gradient(135deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+  background: linear-gradient(135deg, var(--pb-blue) 0%, var(--pb-blue-darker) 100%);
   filter: blur(12px);
-  opacity: 0.4;
+  opacity: 0.35;
   z-index: -1;
 }
 
-.ig-icon svg {
-  width: 28px;
-  height: 28px;
+.phone-icon svg {
+  width: 26px;
+  height: 26px;
   color: white;
 }
 
@@ -934,6 +942,57 @@ input::placeholder {
 .context-text strong {
   color: var(--ink);
   font-weight: 600;
+}
+
+/* === CALLBACK CONFIRM === */
+.callback-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: var(--paper);
+  border: 1px solid var(--pb-blue-line);
+  border-left: 3px solid var(--pb-blue);
+  border-radius: 16px;
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.callback-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--pb-blue-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.callback-icon svg {
+  width: 20px;
+  height: 20px;
+  color: var(--pb-blue-dark);
+}
+
+.callback-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.callback-text {
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+
+.callback-text strong {
+  color: var(--ink);
+  font-weight: 600;
+  font-family: var(--mono);
+  font-size: 13px;
 }
 
 /* === ZONES === */
@@ -1247,6 +1306,7 @@ input::placeholder {
   .card { padding: 28px 24px; border-radius: 16px; }
   .context-block { padding: 28px 24px; }
   .result-hero { padding: 36px 28px; border-radius: 16px; }
+  .callback-block { padding: 20px; }
   .hero { margin-bottom: 40px; }
   .header { margin-bottom: 40px; }
 }
@@ -1474,34 +1534,50 @@ input::placeholder {
       </div>
     </div>
 
-    <!-- STEP 5: INSTAGRAM GATE -->
+    <!-- STEP 5: TELÉFONO + LLAMADA -->
     <div class="step-pane" data-pane="5">
       <div class="card">
-        <div class="ig-icon-wrap">
-          <div class="ig-icon">
+        <div class="contact-icon-wrap">
+          <div class="phone-icon">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/>
-              <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
-              <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+              <path d="M6.2 3h3.1l1.5 3.9-2 1.4a12.5 12.5 0 0 0 6.9 6.9l1.4-2 3.9 1.5v3.1a2 2 0 0 1-2.2 2A17.5 17.5 0 0 1 3.2 5.2 2 2 0 0 1 5.2 3h1z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
             </svg>
           </div>
           <div>
-            <div class="card-eyebrow" style="margin-bottom: 4px;">Paso 5 · Identificación</div>
-            <h2 class="card-title" style="margin-bottom: 0;">Tu Instagram</h2>
+            <div class="card-eyebrow" style="margin-bottom: 4px;">Paso 5 · Contacto</div>
+            <h2 class="card-title" style="margin-bottom: 0;">Tu teléfono</h2>
           </div>
         </div>
-        <p class="card-desc">Para enviarte tu resultado y mantener el contexto si tienes preguntas después. Si llegaste acá desde Instagram, ya sabemos quién eres.</p>
+        <p class="card-desc">Lo usamos para enviarte tu resultado y para tener contexto si después tienes preguntas sobre los números.</p>
 
         <div class="field">
           <div class="field-label">
-            <span class="field-label-text">Usuario de Instagram</span>
-            <span class="field-hint">Sin @ ni espacios</span>
+            <span class="field-label-text">Número de celular</span>
+            <span class="field-hint">Chile · 8 dígitos</span>
           </div>
           <div class="input-wrap">
-            <span class="input-prefix">@</span>
-            <input type="text" id="instagram" placeholder="tuusuario" autocomplete="off">
+            <span class="input-prefix">+56 9</span>
+            <input type="tel" id="telefono" inputmode="numeric" placeholder="1234 5678" autocomplete="tel-national">
           </div>
-          <p class="field-sub">Solo el equipo de Andrés ve esta información. No publicamos, no compartimos, no enviamos spam.</p>
+          <p class="field-sub">Solo el equipo de Andrés ve esta información. No compartimos tus datos ni enviamos spam.</p>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-label-text">¿Quieres que alguien del equipo te llame?</span>
+            <span class="field-hint">Sin costo</span>
+          </div>
+          <div class="chip-group cols-2">
+            <button class="chip" data-llamada="si" onclick="selectLlamada(this)">
+              <span class="chip-title">Sí, prefiero que me llamen</span>
+              <span class="chip-sub">Revisamos tu resultado y tu caso en detalle</span>
+            </button>
+            <button class="chip" data-llamada="no" onclick="selectLlamada(this)">
+              <span class="chip-title">No por ahora</span>
+              <span class="chip-sub">Solo quiero ver mi resultado</span>
+            </button>
+          </div>
+          <p class="field-sub">La asesoría es una revisión de tu situación, no una llamada de venta. Si respondes que no, igual ves tu resultado completo.</p>
         </div>
 
         <div class="btn-row">
@@ -1607,7 +1683,8 @@ const state = {
   edad: 0,
   pie: null,
   ciudad: null,
-  instagram: '',
+  telefono: '',        // 8 dígitos, sin el prefijo +56 9
+  quiereLlamada: null, // 'si' | 'no'
   step: 1
 };
 
@@ -1626,6 +1703,28 @@ function parseNumber(str) {
 function formatThousands(str) {
   const num = parseNumber(str);
   return num > 0 ? formatCLP(num) : '';
+}
+
+// Normaliza cualquier forma de escribir un celular chileno a 8 dígitos
+// Acepta: 12345678 · 912345678 · 56912345678 · +56 9 1234 5678
+function normalizarTelefono(raw) {
+  let d = (raw || '').replace(/\D/g, '');
+  if (d.startsWith('56')) d = d.slice(2);
+  if (d.length > 8 && d.startsWith('9')) d = d.slice(1);
+  return d.slice(0, 8);
+}
+
+function formatTelefono(digitos) {
+  if (digitos.length <= 4) return digitos;
+  return digitos.slice(0, 4) + ' ' + digitos.slice(4);
+}
+
+function telefonoCompleto() {
+  return '+569' + state.telefono;
+}
+
+function telefonoLegible() {
+  return '+56 9 ' + formatTelefono(state.telefono);
 }
 
 // =========================================================================
@@ -1669,11 +1768,19 @@ document.getElementById('edad').addEventListener('input', e => {
   checkStep3();
 });
 
-document.getElementById('instagram').addEventListener('input', e => {
-  let val = e.target.value.replace(/[^a-zA-Z0-9._]/g, '').toLowerCase();
-  e.target.value = val;
-  state.instagram = val;
-  document.getElementById('btn-submit').disabled = val.length < 2;
+document.getElementById('telefono').addEventListener('input', e => {
+  const cursorPos = e.target.selectionStart;
+  const oldLen = e.target.value.length;
+
+  state.telefono = normalizarTelefono(e.target.value);
+  const formatted = formatTelefono(state.telefono);
+  e.target.value = formatted;
+
+  const delta = formatted.length - oldLen;
+  const newPos = Math.max(0, Math.min(formatted.length, cursorPos + delta));
+  e.target.setSelectionRange(newPos, newPos);
+
+  checkStep5();
 });
 
 function selectPie(btn) {
@@ -1690,9 +1797,21 @@ function selectCiudad(btn) {
   document.getElementById('btn-4').disabled = false;
 }
 
+function selectLlamada(btn) {
+  document.querySelectorAll('[data-llamada]').forEach(c => c.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.quiereLlamada = btn.dataset.llamada;
+  checkStep5();
+}
+
 function checkStep3() {
   const valid = state.edad >= 18 && state.edad <= 70 && state.pie !== null;
   document.getElementById('btn-3').disabled = !valid;
+}
+
+function checkStep5() {
+  const valid = state.telefono.length === 8 && state.quiereLlamada !== null;
+  document.getElementById('btn-submit').disabled = !valid;
 }
 
 // =========================================================================
@@ -1846,7 +1965,8 @@ function enviarLead(resultado) {
 
   const payload = {
     timestamp: new Date().toISOString(),
-    instagram: state.instagram,
+    telefono: telefonoCompleto(),
+    quiere_llamada: state.quiereLlamada === 'si',
     renta: state.renta,
     contrato: state.contrato,
     deudas: state.deudas,
@@ -1906,6 +2026,8 @@ function renderResultado(r) {
       </p>
     </div>
 
+    ${renderCallback()}
+
     <div class="metrics-row" style="animation: fade-up 0.6s var(--ease) 0.15s both;">
       <div class="metric">
         <div class="metric-label">Dividendo mensual</div>
@@ -1937,6 +2059,42 @@ function renderResultado(r) {
       el.style.animationDelay = `${0.05 + i * 0.08}s`;
     });
   }, 100);
+}
+
+function renderCallback() {
+  if (state.quiereLlamada === 'si') {
+    return `
+      <div class="callback-block" style="animation: fade-up 0.6s var(--ease) 0.1s both;">
+        <div class="callback-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6.2 3h3.1l1.5 3.9-2 1.4a12.5 12.5 0 0 0 6.9 6.9l1.4-2 3.9 1.5v3.1a2 2 0 0 1-2.2 2A17.5 17.5 0 0 1 3.2 5.2 2 2 0 0 1 5.2 3h1z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="callback-title">Te vamos a llamar</div>
+          <p class="callback-text">
+            Alguien del equipo de Andrés te contacta al <strong>${telefonoLegible()}</strong> para revisar contigo este resultado: qué supuestos usamos, qué cambia según tu caso real y qué pasos siguen. Contesta o devuelve el llamado cuando puedas.
+          </p>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="callback-block" style="animation: fade-up 0.6s var(--ease) 0.1s both;">
+      <div class="callback-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 8v5m0 3.5h.01M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="callback-title">Sin llamada, como pediste</div>
+        <p class="callback-text">
+          Guardamos tu simulación asociada a tu número. Si más adelante quieres revisar los supuestos con alguien del equipo, escríbenos y retomamos desde acá.
+        </p>
+      </div>
+    </div>
+  `;
 }
 
 function renderContextoCiudad(r) {
@@ -2056,6 +2214,8 @@ function renderNoCalifica(r) {
       <h2 class="warning-title">${titulo}</h2>
       <p class="warning-text">${mensaje}</p>
     </div>
+
+    ${renderCallback()}
 
     <div class="context-block" style="animation: fade-up 0.6s var(--ease) 0.2s both;">
       <div class="context-eyebrow">El camino que sí existe</div>
